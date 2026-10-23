@@ -1,0 +1,6 @@
+{
+  "name": "AuraMed Sentinel",
+  "description": "Autonomous Multi-Agent Clinical Decision Support & Pharmacovigilance Engine powered by Gemini, deterministic pharmacology tools, adversarial safety verification, and HITL cryptographic gating.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
