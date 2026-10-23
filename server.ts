@@ -17,7 +17,7 @@ import {
 
 dotenv.config();
 
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 function getGeminiClient(): GoogleGenAI | null {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -83,9 +83,10 @@ const calculateCrClTool: FunctionDeclaration = {
   },
 };
 
+export const app = express();
+app.use(express.json({ limit: '2mb' }));
+
 async function startServer() {
-  const app = express();
-  app.use(express.json({ limit: '2mb' }));
 
   // Health & architecture info endpoint
   app.get('/api/health', (_req, res) => {
@@ -418,23 +419,28 @@ ${JSON.stringify(baselinePacket.clinical_assessment, null, 2)}
     });
   });
 
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+  if (!process.env.VERCEL) {
+    if (process.env.NODE_ENV !== 'production') {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.resolve(process.cwd(), 'dist');
+      app.use(express.static(distPath));
+      app.get('*', (_req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    }
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`AuraMed Sentinel server listening on http://0.0.0.0:${PORT}`);
     });
   }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`AuraMed Sentinel server listening on http://0.0.0.0:${PORT}`);
-  });
 }
 
 startServer();
+
+export default app;
+
